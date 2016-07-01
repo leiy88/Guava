@@ -1,5 +1,5 @@
 # Guava学习笔记
-<label style="font-size:32px">&nbsp;&nbsp;&nbsp;&nbsp;——package com.google.common.base</label>
+<p style="font-size:32px">&nbsp;&nbsp;&nbsp;&nbsp;——package com.google.common.base</p>
 
 1.函数式编程相关
 ----------------------------------------
