@@ -14,6 +14,7 @@ public enum SortFunction implements Function<List, List> {
 
     @Override
     public List apply(List list) {
+        System.out.println("Sort...");
         List newList = Lists.newArrayList(list);
         Collections.sort(newList);
         return newList;

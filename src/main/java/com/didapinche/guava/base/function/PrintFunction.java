@@ -13,6 +13,7 @@ public enum  PrintFunction implements Function<List, String> {
 
     @Override
     public String apply(List list) {
+        System.out.println("Print...");
        return Functions.toStringFunction().apply(list);
     }
 }

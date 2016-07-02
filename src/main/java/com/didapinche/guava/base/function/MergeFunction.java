@@ -15,6 +15,7 @@ public enum  MergeFunction implements Function<List[], List> {
     @Override
     public List apply(List[] lists) {
         Preconditions.checkNotNull(lists);
+        System.out.println("Merge...");
         List merge = Lists.newArrayList();
         for(List list : lists){
             merge.addAll(list);
