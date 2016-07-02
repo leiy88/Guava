@@ -14,8 +14,10 @@ JDK8之前并不支持函数式编程，所以Guava提供了一套函数式编�
 * Predicates 断言工具类，有一些断言的实现<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Predicates.png)<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/PredicatesInnerClasses.png)
-* Functions  函数工具类，有一些函数实现
-* Suppliers
+* Functions  函数工具类，有一些函数实现<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Functions.png)<br/>
+* Suppliers<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Suppliers.png)<br/>
 
 疑问:Function和Predicate中为什么要定义equals()？
 
