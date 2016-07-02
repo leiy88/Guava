@@ -18,6 +18,18 @@
                 </configuration>
             </plugin>
         </plugins>
+
+        <resources>
+            <!-- Filter jdbc.properties & mail.properties. NOTE: We don't filter applicationContext-infrastructure.xml,
+                let it go with spring's resource process mechanism. -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>*.png</exclude>
+                </excludes>
+            </resource>
+        </resources>
     </build>
 
     <dependencies>
