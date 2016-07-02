@@ -14,6 +14,8 @@ equals()
 * Supplier
 * Suppliers
 
+疑问:Function和Predicate中为什么要定义equals()？
+
 2.字符串工具类
 ----------------------------------------
 * Spliter
