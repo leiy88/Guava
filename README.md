@@ -146,9 +146,10 @@ UPPER_CAMEL.to(LOWER_UNDERSCORE, "testTest") //test_test
 
 * Spliter<br/>
 提供各种字符串分割方法<br/>
-
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Spliter.png)
+跟上面的一样，返回类型为Spliter的为工厂方法，返回一个特定的Spliter，调用其splite方法进行分割<br/>
 Spliter与apache commons的StringUtils对比：
-    1.Spliter面向对象，StringUtils面向过程
+1.Spliter面向对象，StringUtils面向过程
 ```
 // Apache StringUtils...
 String[] tokens1= StringUtils.split("one,two,three",',');
@@ -156,17 +157,32 @@ String[] tokens1= StringUtils.split("one,two,three",',');
 // Google Guava splitter...
 Iteratable<String> tokens2 = Splitter.on(','),split("one,two,three");
 ```
-    2.Spliter分割结果是迭代器(写快读慢)，StringUtils是数组(读快写慢)
+2.Spliter分割结果是迭代器(写快读慢)，StringUtils是数组(读快写慢)
 附：[Spliter与apache commons的StringUtils对比](http://vipcowrie.iteye.com/blog/1513693)
 * Joiner<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Spliter.png)
+还是一样，是个工厂，调用join来连接字符串
 
 3.实用工具类
 ----------------------------------------
 * PreConditions<br/>
+参数检查，大家都懂的，略<br/>
 * Verify<br/>
+跟PreConditions差不多，只不过只能检查表达式是否为true，false的时候PreConditions抛出jdk定义的异常，而Verify抛出guava自己的VerifyException
 * Defaults<br/>
+返回各种类型的默认值<br/>
 * Enums<br/>
+枚举类型常用方法的工具类，不知道有什么用。
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Enums.png)
 * Equivalence<br/>
 * Objects<br/>
 * StopWatch<br/>
+用来计时的<br/>
 * Throwables<br/>
+异常处理工具类
+我们在日常的开发中遇到异常的时候，往往需要做下面的几件事情中的一些：
+1. 将异常信息存入数据库、日志文件、或者邮件等。
+2. 将受检查的异常转换为运行时异常
+3. 在代码中得到引发异常的最低层异常
+4. 得到异常链
+5. 过滤异常，只抛出感兴趣的异常
