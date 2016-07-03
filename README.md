@@ -23,7 +23,7 @@ JDK8之前并不支持函数式编程，所以Guava提供了一套函数式编�
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Function.png)
 * Supplier<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Supplier.png)
-* Functions  函数工具类，有一些函数实现<br/>
+* Functions  函数工具类，有一些函数实现(结尾带s的都是[工厂模式]())<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Functions.png)<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/FunctionsInnerClasses.png)<br/>
 -forMap(Map):返回一个搜索Map的函数,apply(key),map中存在key则返回value，否则抛出异常<br/>
@@ -44,8 +44,70 @@ JDK8之前并不支持函数式编程，所以Guava提供了一套函数式编�
 
 2.字符串工具类
 ----------------------------------------
-* Spliter
-* Joiner
+* Strings<br/>
+Strings 提供了空指针、空字符串的判断和互换方法。<br/>
+```
+Strings.isNullOrEmpty("");//true<br/>
+Strings.nullToEmpty(null);//""<br/>
+Strings.nullToEmpty("a");//"a"<br/>
+Strings.emptyToNull("");//null<br/>
+Strings.emptyToNull("a");//"a"<br/>
+```
+拿到字符串入参之后，调用一下 nullToEmpty 将可能的空指针变成空字符串，然后也就不用担心字符串引发的 NPE，或者字符串拼接时候出现的 “null” 了。<br/>
+<br/>
+Strings 还提供了常见的字符串前后拼接同一个字符直到达到某个长度，或者重复拼接自身 n 次。<br/>
+```
+Strings.padStart("7", 3, '0');//"007"<br/>
+Strings.padStart("2016", 3, '0');//"2016"<br/>
+Strings.padEnd("4.", 5, '0');//"4.000"<br/>
+Strings.padEnd("2016", 3, '!');//"2016"<br/>
+Strings.repeat("hey", 3);//"heyheyhey"<br/>
+```
+#### **源码分析**
+```
+public static String repeat(String string, int count) {
+  checkNotNull(string);  // eager for GWT.
+  if (count <= 1) {
+    checkArgument(count >= 0, "invalid count: %s", count);
+    return (count == 0) ? "" : string;
+  }
+  // IF YOU MODIFY THE CODE HERE, you must update StringsRepeatBenchmark
+  <font color="red">
+  final int len = string.length();
+  final long longSize = (long) len * (long) count;
+  final int size = (int) longSize;
+  if (size != longSize) {
+    throw new ArrayIndexOutOfBoundsException("Required array size too large: " + longSize);
+  }
+  </font>
+  final char[] array = new char[size];
+  string.getChars(0, len, array, 0);
+  int n;
+  for (n = len; n < size - n; n <<= 1) {
+    System.arraycopy(array, 0, array, n, n);
+  }
+  System.arraycopy(array, 0, array, n, size - n);
+  return new String(array);
+}
+int 升级 long 然后降级 int，是为了确保字符串 repeat 之后没有超过 String 的长度限制，而先强制提升然后截断的方法，能够高效的判断溢出
+```
+<br/>
+Strings 的最后一组功能是查找两个字符串的公共前缀、后缀。<br/>
+Strings.commonPrefix("aaab", "aac");//"aa"<br/>
+Strings.commonSuffix("aaac", "aac");//"aac"<br/>
 
-3.其他
+* CharMatcher<br/>
+* CaseFormat<br/>
+* Spliter<br/>
+* Joiner<br/>
+
+3.实用工具类
 ----------------------------------------
+* PreConditions<br/>
+* Verify<br/>
+* Defaults<br/>
+* Enums<br/>
+* Equivalence<br/>
+* Objects<br/>
+* StopWatch<br/>
+* Throwables<br/>
