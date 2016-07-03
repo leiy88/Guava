@@ -26,19 +26,19 @@ JDK8之前并不支持函数式编程，所以Guava提供了一套函数式编�
 * Functions  函数工具类，通过内部类提供了很多实用函数(结尾带s的都是[工厂模式](https://www.baidu.com/s?wd=工厂模式))<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Functions.png)<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/FunctionsInnerClasses.png)<br/>
--forMap(Map):返回一个搜索Map的函数,apply(key),map中存在key则返回value，否则抛出异常<br/>
--forMap(Map, V):带默认值的搜索Map函数，key不存在是返回默认值，可以是null<br/>
--compose(Function a, Function b):将两个函数进行组合，相当于a.apply(b.apply)([桥接模式](https://www.baidu.com/s?wd=桥接模式))<br/>
--constant(E):不管输入是什么，都会返回一个常量<br/>
--forPredicate(Predicate):将一个断言转换成返回值为Boolean的函数([适配器模式](https://www.baidu.com/s?wd=适配器模式))<br/>
--forSupplier(Supplier):将一个Supplier转换成函数，不管传入参数是什么，都返回supplier.get()<br/>
+    * forMap(Map):返回一个搜索Map的函数,apply(key),map中存在key则返回value，否则抛出异常<br/>
+    * forMap(Map, V):带默认值的搜索Map函数，key不存在是返回默认值，可以是null<br/>
+    * compose(Function a, Function b):将两个函数进行组合，相当于a.apply(b.apply)([桥接模式](https://www.baidu.com/s?wd=桥接模式))<br/>
+    * constant(E):不管输入是什么，都会返回一个常量<br/>
+    * forPredicate(Predicate):将一个断言转换成返回值为Boolean的函数([适配器模式](https://www.baidu.com/s?wd=适配器模式))<br/>
+    * forSupplier(Supplier):将一个Supplier转换成函数，不管传入参数是什么，都返回supplier.get()<br/>
 * Predicates 断言工具类，有一些断言的实现<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Predicates.png)<br/>
 -compose(Predicate p, Function f):p.apply(f.apply())
 * Suppliers<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Suppliers.png)<br/>
--compose(Function f, Supplier s):f.apply(s.get())
--memoize(Supplier):带缓存的Supplier
+    * compose(Function f, Supplier s):f.apply(s.get())
+    * memoize(Supplier):带缓存的Supplier
 
 疑问:Function和Predicate中为什么要定义equals()？
 
@@ -97,12 +97,13 @@ Strings.commonPrefix("aaab", "aac");//"aa"
 Strings.commonSuffix("aaac", "aac");//"aac"
 ```
 * CharMatcher<br/>
-CharMatcher提供了多种对字符串处理的方法, 它的主要意图有:<br/>
-1. 找到匹配的字符<br/>
-2. 处理匹配的字符<br/>
-CharMatcher内部主要实现包括两部分:<br/>
-1. 实现了大量公用内部类, 用来方便用户对字符串做匹配: 例如 JAVA_DIGIT 匹配数字, JAVA_LETTER 匹配字母等等.<br/>
-2. 实现了大量处理字符串的方法, 使用特定的CharMatcher可以对匹配到的字符串做出多种处理, 例如 remove(), replace(), trim(), retain()等等<br/>
+    CharMatcher提供了多种对字符串处理的方法, 它的主要意图有:<br/>
+    1. 找到匹配的字符<br/>
+    2. 处理匹配的字符<br/>
+
+    CharMatcher内部主要实现包括两部分:<br/>
+    1. 实现了大量公用内部类, 用来方便用户对字符串做匹配: 例如 JAVA_DIGIT 匹配数字, JAVA_LETTER 匹配字母等等.<br/>
+    2. 实现了大量处理字符串的方法, 使用特定的CharMatcher可以对匹配到的字符串做出多种处理, 例如 remove(), replace(), trim(), retain()等等<br/>
 CharMatcher本身是一个抽象类, 其中一些操作方法是抽象方法, 他主要依靠内部继承CharMatcher的内部子类来实现抽象方法和重写一些操作方法, 因为不同的匹配规则的这些操作方法具有不同的实现要求([模板方法模式](https://www.baidu.com/s?wd=模板方法模式))<br/>
 #### 常用操作方法
 CharMatcher negate(): 返回以当前Matcher判断规则相反的Matcher
@@ -126,14 +127,14 @@ CharMatcher.is('c').and(CharMatcher.noneOf("abc")).matches('c') //false
 * CaseFormat<br/>
 不同命名方式转换的工具类，不支持Ascii以外的字符<br/>
 通过枚举定义了各种格式：<br/>
-LOWER_HYPHEN 中折线命名，如test-test<br/>
-LOWER_UNDERSCORE 小写下划线命名，如test_test<br/>
-UPPER_UNDERSCORE 大写下划线命名，如TEST_TEST<br/>
-LOWER_CAMEL 小写驼峰命名，如testTest<br/>
-UPPER_CAMEL 大写驼峰命名，如TestTest<br/>
+    * LOWER_HYPHEN 中折线命名，如test-test<br/>
+    * LOWER_UNDERSCORE 小写下划线命名，如test_test<br/>
+    * UPPER_UNDERSCORE 大写下划线命名，如TEST_TEST<br/>
+    * LOWER_CAMEL 小写驼峰命名，如testTest<br/>
+    * UPPER_CAMEL 大写驼峰命名，如TestTest<br/>
 两个模板方法：<br/>
-to(CaseFormat, String)<br/>
-convert(CaseFormat, String)<br/>
+    * to(CaseFormat, String)<br/>
+    * convert(CaseFormat, String)<br/>
 两个方法很类似，只有一点不同，如果两种格式相同to不会做转换，直接返回原字符串，而conver依然会做一次转换
 ```
 UPPER_CAMEL.convert(UPPER_CAMEL, "testTest") //TestTest
@@ -145,13 +146,9 @@ UPPER_CAMEL.to(LOWER_UNDERSCORE, "testTest") //test_test
 
 * Spliter<br/>
 提供各种字符串分割方法<br/>
-| Tables        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
+
 Spliter与apache commons的StringUtils对比：
-1.Spliter面向对象，StringUtils面向过程
+    1.Spliter面向对象，StringUtils面向过程
 ```
 // Apache StringUtils...
 String[] tokens1= StringUtils.split("one,two,three",',');
@@ -159,7 +156,7 @@ String[] tokens1= StringUtils.split("one,two,three",',');
 // Google Guava splitter...
 Iteratable<String> tokens2 = Splitter.on(','),split("one,two,three");
 ```
-2.Spliter分割结果是迭代器(写快读慢)，StringUtils是数组(读快写慢)
+    2.Spliter分割结果是迭代器(写快读慢)，StringUtils是数组(读快写慢)
 附：[Spliter与apache commons的StringUtils对比](http://vipcowrie.iteye.com/blog/1513693)
 * Joiner<br/>
 
