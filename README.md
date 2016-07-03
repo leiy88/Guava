@@ -145,8 +145,11 @@ UPPER_CAMEL.to(LOWER_UNDERSCORE, "testTest") //test_test
 
 * Spliter<br/>
 提供各种字符串分割方法<br/>
-| 方法 | 说明 |
-| a | b |
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
 Spliter与apache commons的StringUtils对比：
 1.Spliter面向对象，StringUtils面向过程
 ```
