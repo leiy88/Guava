@@ -72,14 +72,12 @@ public static String repeat(String string, int count) {
     return (count == 0) ? "" : string;
   }
   // IF YOU MODIFY THE CODE HERE, you must update StringsRepeatBenchmark
-  <font color="red">
   final int len = string.length();
   final long longSize = (long) len * (long) count;
   final int size = (int) longSize;
   if (size != longSize) {
     throw new ArrayIndexOutOfBoundsException("Required array size too large: " + longSize);
   }
-  </font>
   final char[] array = new char[size];
   string.getChars(0, len, array, 0);
   int n;
