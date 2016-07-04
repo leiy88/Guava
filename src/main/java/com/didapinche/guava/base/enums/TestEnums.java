@@ -3,7 +3,7 @@ package com.didapinche.guava.base.enums;
 import com.google.common.base.Enums;
 
 /**
- * Created by Administrator on 2016/7/4.
+ * Created by Administrator on 2016/7/3.
  */
 public class TestEnums {
     private enum Color{

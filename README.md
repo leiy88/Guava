@@ -42,7 +42,19 @@ JDK8之前并不支持函数式编程，所以Guava提供了一套函数式编�
 
 疑问:Function和Predicate中为什么要定义equals()？
 
-2.字符串工具类
+2.引用相关
+----------------------------------------
+* FinalizableReference
+* FinalizableSoftReference
+* FinalizableWeakReference
+* FinalizablePhantomReference
+* FinalizableReferenceQueue
+
+在java体系中，并没有在reference对象中定义相应的回调方法，因此guava为jdk的reference增加了新的定义接口，称之为FinalizableReference。<br/>
+增加了finalizeReferent()方法来实现gc后的回调。
+
+
+3.字符串工具类
 ----------------------------------------
 * Strings<br/>
 Strings 提供了空指针、空字符串的判断和互换方法。<br/>
@@ -163,11 +175,19 @@ Iteratable<String> tokens2 = Splitter.on(','),split("one,two,three");
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Spliter.png)<br/>
 还是一样，是个工厂，调用join来连接字符串
 
-3.实用工具类
+4.其他实用工具类
 ----------------------------------------
 * PreConditions<br/>
-参数检查，大家都懂的，略<br/>
+防御式编程工具类，参数检查异常提前抛出，大家都懂的...<br/>
+表达式正确性检查：<br/>
+    &emsp;checkArgument(expression) expression=false抛出IllegalArgumentException<br/>
+非空检查：<br/>
+    &emsp;checkNotNull(T), 被检查对象为空抛出NullPointerException，否则返回原对象<br/>
+边界检查：<br/>
+    &emsp;checkElementIndex(index, size) index不合法抛出IndexOutOfBoundsException，size不合法IllegalArgumentException<br/>
+
 * Verify<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Verify.png)<br/>
 跟PreConditions差不多，只不过只能检查表达式是否为true，false的时候PreConditions抛出jdk定义的异常，而Verify抛出guava自己的VerifyException
 * Defaults<br/>
 返回各种类型的默认值<br/>
@@ -175,14 +195,34 @@ Iteratable<String> tokens2 = Splitter.on(','),split("one,two,three");
 枚举类型常用方法的工具类，不知道有什么用。<br/>
 ![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Enums.png)<br/>
 * Equivalence<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Enums.png)<br/>
+这个类实现的功能都可以通过重写equals方法，但是通过Equivalence可以更加优雅的实现。
+```
+  public final boolean equivalent(@Nullable T a, @Nullable T b) {
+    if (a == b) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return false;
+    }
+    return doEquivalent(a, b);
+  }
+
+  protected abstract boolean doEquivalent(T a, T b);
+```
 * Objects<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Objects.png)<br/>
+可以比较两个可能为null的对象，避免 NPE<br/>
 * StopWatch<br/>
 用来计时的<br/>
 * Throwables<br/>
 异常处理工具类
 我们在日常的开发中遇到异常的时候，往往需要做下面的几件事情中的一些：
     1. 将异常信息存入数据库、日志文件、或者邮件等。
-    2. 将受检查的异常转换为运行时异常
+    2. 将checkedException转换为UncheckedException
     3. 在代码中得到引发异常的最低层异常
     4. 得到异常链
     5. 过滤异常，只抛出感兴趣的异常
+
+Throwables给我们提供了这些常用的方法<br/>
+![Aaron Swartz](https://raw.githubusercontent.com/leiy88/Guava/master/src/main/resources/Throwables.png)<br/>
