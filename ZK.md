@@ -37,7 +37,7 @@ servers 是指组成ZooKeeper服务的机器;quorum peers指的是构成一个�
 
 Watches
 -----------------
-客户端会监控 znode 。节点的改变会出发监控并清除当前监控。当一个监控被触发，zk会通知客户端。更详细的描述在 ZooKeeper Watches 章节。
+客户端会监控 znode 。节点的改变会触发监控并清除当前监控，也就是说监控是一次性的。当一个监控被触发，zk会通知客户端。更详细的描述在 ZooKeeper Watches 章节。
 
 Data Access
 -----------------
@@ -60,8 +60,86 @@ zk跟踪时间有多种方式：
 * Zxid
 每次zk状态变更都会受到一个 zxid(ZooKeeper Transaction Id)形式的时间戳。它能表现出 zk 变更的顺序。每次变更都有一个唯一的 zxid，如果 zxid1 比 zxid2 小那么就能知道 zxid1发生在 zxid2 之前。
 * Version numbers
-Every change to a node will cause an increase to one of the version numbers of that node. The three version numbers are version (number of changes to the data of a znode), cversion (number of changes to the children of a znode), and aversion (number of changes to the ACL of a znode).
+节点每次变更都会使其版本号自增。有三个版本号：version(znode数据版本号)，cversion(znode子节点版本号)，averson(ACL版本号)。
 * Ticks
-When using multi-server ZooKeeper, servers use ticks to define timing of events such as status uploads, session timeouts, connection timeouts between peers, etc. The tick time is only indirectly exposed through the minimum session timeout (2 times the tick time); if a client requests a session timeout less than the minimum session timeout, the server will tell the client that the session timeout is actually the minimum session timeout.
+当zk集群部署时，zk服务器使用ticks来定义状态上传，会话超时，连接超时等事件的时间。tick time 只能通过最小会话超时(2*tick time)来间接暴露，如果一个客户端请求的会话超时小于最小超时，服务器会高速客户端实际的超时时间是最小超时。
 * Real time
-ZooKeeper doesn't use real time, or clock time, at all except to put timestamps into the stat structure on znode creation and znode modification.
+除了 znode stat 结构体中的创建时间和修改时间，zk 不使用真实的时间或时钟。
+
+ZooKeeper Stat Structure
+========================
+znode stat 结构体说明：
+
+* czxid
+znode创建的zxid
+* mzxid
+znode修改的zxid
+* ctime
+znode创建时间，距1970-1-1号的毫秒数
+* mtime
+znode修改时间，距1970-1-1号的毫秒数
+* version
+数据版本号
+* cversion
+子节点版本号
+* aversion
+ACL版本号
+* ephemeralOwner
+临时节点保存着创建它的会话 id。非临时节点始终为0
+* dataLength
+znode数据长度
+* numChildren
+znode子节点个数
+
+ZooKeeper Sessions
+=====================
+ During normal operation will be in one of these two states. If an unrecoverable error occurs, such as session expiration or authentication failure, or if the application explicitly closes the handle, the handle will move to the CLOSED state. The following figure shows the possible state transitions of a ZooKeeper client:
+zk客户端通过使用语言绑定创建一个到zk服务的句柄来与服务端建立会话。一旦句柄建立，它的初始态为 CONNECTING，客户端尝试连接zk集群中的某个服务器，连接成功后状态将变为 CONNECTED 。通常的操作将会是这两种状态。当有不可恢复的错误出现时，比如会话过期、授权失败或者客户端断开连接，客户端句柄将会切换为 CLOSED 状态。下图为zk客户端的状态迁移图：<br>
+![Aaron Swartz](https://zookeeper.apache.org/doc/r3.4.8/images/state_dia.jpg)<br>
+
+To create a client session the application code must provide a connection string containing a comma separated list of host:port pairs, each corresponding to a ZooKeeper server (e.g. "127.0.0.1:4545" or "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002"). The ZooKeeper client library will pick an arbitrary server and try to connect to it. If this connection fails, or if the client becomes disconnected from the server for any reason, the client will automatically try the next server in the list, until a connection is (re-)established.
+
+Added in 3.2.0: An optional "chroot" suffix may also be appended to the connection string. This will run the client commands while interpreting all paths relative to this root (similar to the unix chroot command). If used the example would look like: "127.0.0.1:4545/app/a" or "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002/app/a" where the client would be rooted at "/app/a" and all paths would be relative to this root - ie getting/setting/etc... "/foo/bar" would result in operations being run on "/app/a/foo/bar" (from the server perspective). This feature is particularly useful in multi-tenant environments where each user of a particular ZooKeeper service could be rooted differently. This makes re-use much simpler as each user can code his/her application as if it were rooted at "/", while actual location (say /app/a) could be determined at deployment time.
+
+When a client gets a handle to the ZooKeeper service, ZooKeeper creates a ZooKeeper session, represented as a 64-bit number, that it assigns to the client. If the client connects to a different ZooKeeper server, it will send the session id as a part of the connection handshake. As a security measure, the server creates a password for the session id that any ZooKeeper server can validate.The password is sent to the client with the session id when the client establishes the session. The client sends this password with the session id whenever it reestablishes the session with a new server.
+
+One of the parameters to the ZooKeeper client library call to create a ZooKeeper session is the session timeout in milliseconds. The client sends a requested timeout, the server responds with the timeout that it can give the client. The current implementation requires that the timeout be a minimum of 2 times the tickTime (as set in the server configuration) and a maximum of 20 times the tickTime. The ZooKeeper client API allows access to the negotiated timeout.
+
+When a client (session) becomes partitioned from the ZK serving cluster it will begin searching the list of servers that were specified during session creation. Eventually, when connectivity between the client and at least one of the servers is re-established, the session will either again transition to the "connected" state (if reconnected within the session timeout value) or it will transition to the "expired" state (if reconnected after the session timeout). It is not advisable to create a new session object (a new ZooKeeper.class or zookeeper handle in the c binding) for disconnection. The ZK client library will handle reconnect for you. In particular we have heuristics built into the client library to handle things like "herd effect", etc... Only create a new session when you are notified of session expiration (mandatory).
+
+Session expiration is managed by the ZooKeeper cluster itself, not by the client. When the ZK client establishes a session with the cluster it provides a "timeout" value detailed above. This value is used by the cluster to determine when the client's session expires. Expirations happens when the cluster does not hear from the client within the specified session timeout period (i.e. no heartbeat). At session expiration the cluster will delete any/all ephemeral nodes owned by that session and immediately notify any/all connected clients of the change (anyone watching those znodes). At this point the client of the expired session is still disconnected from the cluster, it will not be notified of the session expiration until/unless it is able to re-establish a connection to the cluster. The client will stay in disconnected state until the TCP connection is re-established with the cluster, at which point the watcher of the expired session will receive the "session expired" notification.
+
+Example state transitions for an expired session as seen by the expired session's watcher:
+
+'connected' : session is established and client is communicating with cluster (client/server communication is operating properly)
+.... client is partitioned from the cluster
+'disconnected' : client has lost connectivity with the cluster
+.... time elapses, after 'timeout' period the cluster expires the session, nothing is seen by client as it is disconnected from cluster
+.... time elapses, the client regains network level connectivity with the cluster
+'expired' : eventually the client reconnects to the cluster, it is then notified of the expiration
+Another parameter to the ZooKeeper session establishment call is the default watcher. Watchers are notified when any state change occurs in the client. For example if the client loses connectivity to the server the client will be notified, or if the client's session expires, etc... This watcher should consider the initial state to be disconnected (i.e. before any state changes events are sent to the watcher by the client lib). In the case of a new connection, the first event sent to the watcher is typically the session connection event.
+
+The session is kept alive by requests sent by the client. If the session is idle for a period of time that would timeout the session, the client will send a PING request to keep the session alive. This PING request not only allows the ZooKeeper server to know that the client is still active, but it also allows the client to verify that its connection to the ZooKeeper server is still active. The timing of the PING is conservative enough to ensure reasonable time to detect a dead connection and reconnect to a new server.
+
+Once a connection to the server is successfully established (connected) there are basically two cases where the client lib generates connectionloss (the result code in c binding, exception in Java -- see the API documentation for binding specific details) when either a synchronous or asynchronous operation is performed and one of the following holds:
+
+The application calls an operation on a session that is no longer alive/valid
+The ZooKeeper client disconnects from a server when there are pending operations to that server, i.e., there is a pending asynchronous call.
+Added in 3.2.0 -- SessionMovedException. There is an internal exception that is generally not seen by clients called the SessionMovedException. This exception occurs because a request was received on a connection for a session which has been reestablished on a different server. The normal cause of this error is a client that sends a request to a server, but the network packet gets delayed, so the client times out and connects to a new server. When the delayed packet arrives at the first server, the old server detects that the session has moved, and closes the client connection. Clients normally do not see this error since they do not read from those old connections. (Old connections are usually closed.) One situation in which this condition can be seen is when two clients try to reestablish the same connection using a saved session id and password. One of the clients will reestablish the connection and the second client will be disconnected (causing the pair to attempt to re-establish its connection/session indefinitely).
+
+ZooKeeper Watches
+============================
+zk中所有的读操作 —— getDate(), getChildren(), exists() 都有一个设置监控的选项。zk对watch的定义：一个监控事件就是一个一次性触发器，当监控的节点数据发生变化时会给客户端发送这个事件。对于监控的定义有如下三个关键点：
+
+One-time trigger
+--------------------------------------
+当数据发生变化时会给客户端发送一个监控事件。例如，客户端调用了 getDate("/znode1", true)，然后 /znode1 变化或者删除了，客户端会收到一个 /znode1 的监控事件。假如 /znode1 再次发生变化，在客户端再次进行带监控的读操作之前不会再次发送监控事件。
+
+Sent to the client
+--------------------------------------
+这意味着有一个事件被发往客户端，但这个事件不一定比更新成功的返回码更快到达客户端。监控事件是异步发往监控者的。zk可以保证顺序：在监控事件到达之前客户端不会感知到数据的变化。网络延迟或其他原因可能导致不同的客户端在不同的时间感知到监控事件及数据变化。关键点在于不同客户端感知到变化将会有严格的顺序。
+
+The data for which the watch was set
+--------------------------------------
+This refers to the different ways a node can change. It helps to think of ZooKeeper as maintaining two lists of watches: data watches and child watches. getData() and exists() set data watches. getChildren() sets child watches. Alternatively, it may help to think of watches being set according to the kind of data returned. getData() and exists() return information about the data of the node, whereas getChildren() returns a list of children. Thus, setData() will trigger data watches for the znode being set (assuming the set is successful). A successful create() will trigger a data watch for the znode being created and a child watch for the parent znode. A successful delete() will trigger both a data watch and a child watch (since there can be no more children) for a znode being deleted as well as a child watch for the parent znode.
+Watches are maintained locally at the ZooKeeper server to which the client is connected. This allows watches to be lightweight to set, maintain, and dispatch. When a client connects to a new server, the watch will be triggered for any session events. Watches will not be received while disconnected from a server. When a client reconnects, any previously registered watches will be reregistered and triggered if needed. In general this all occurs transparently. There is one case where a watch may be missed: a watch for the existence of a znode not yet created will be missed if the znode is created and deleted while disconnected.
