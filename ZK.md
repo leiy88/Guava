@@ -37,7 +37,7 @@ servers 是指组成ZooKeeper服务的机器;quorum peers指的是构成一个�
 
 Watches
 -----------------
-客户端会监控 znode 。节点的改变会触发监控并清除当前监控，也就是说监控是一次性的。当一个监控被触发，zk会通知客户端。更详细的描述在 ZooKeeper Watches 章节。
+客户端会监控 znode 。节点的改变会触发监控并清除当前监控，也就是说监控是一次性的。当一个监控被触发，zk会通知客户端。更详细的描述在 [ZooKeeper Watches](#watch) 章节。
 
 Data Access
 -----------------
@@ -127,7 +127,7 @@ The application calls an operation on a session that is no longer alive/valid
 The ZooKeeper client disconnects from a server when there are pending operations to that server, i.e., there is a pending asynchronous call.
 Added in 3.2.0 -- SessionMovedException. There is an internal exception that is generally not seen by clients called the SessionMovedException. This exception occurs because a request was received on a connection for a session which has been reestablished on a different server. The normal cause of this error is a client that sends a request to a server, but the network packet gets delayed, so the client times out and connects to a new server. When the delayed packet arrives at the first server, the old server detects that the session has moved, and closes the client connection. Clients normally do not see this error since they do not read from those old connections. (Old connections are usually closed.) One situation in which this condition can be seen is when two clients try to reestablish the same connection using a saved session id and password. One of the clients will reestablish the connection and the second client will be disconnected (causing the pair to attempt to re-establish its connection/session indefinitely).
 
-ZooKeeper Watches
+<A HREF="#watch">ZooKeeper Watches</A>
 ============================
 zk中所有的读操作 —— getDate(), getChildren(), exists() 都有一个设置监控的选项。zk对watch的定义：一个监控事件就是一个一次性触发器，当监控的节点数据发生变化时会给客户端发送这个事件。对于监控的定义有如下三个关键点：
 
